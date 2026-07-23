@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 Generador Múltiple de Shorts (Imagen + Audio)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f1724;
+            color: #e8edf3;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: #1a2533;
+            border-radius: 20px;
+            padding: 30px 28px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid #2a3a4a;
+        }
+
+        h1 {
+            font-size: 1.7rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sub {
+            color: #8fa4b8;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #3a506a;
+            border-radius: 14px;
+            padding: 30px 20px;
+            text-align: center;
+            background: #111a24;
+            transition: 0.3s;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .drop-zone.dragover {
+            border-color: #00d4ff;
+            background: #16222e;
+        }
+
+        .drop-zone label {
+            cursor: pointer;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .drop-zone label:hover {
+            text-decoration: underline;
+        }
+
+        .drop-zone input[type="file"] {
+            display: none;
+        }
+
+        .drop-zone .icon {
+            font-size: 2.8rem;
+            margin-bottom: 6px;
+        }
+
+        .drop-zone .small {
+            font-size: 0.8rem;
+            color: #6a8a9a;
+            margin-top: 4px;
+        }
+
+        .file-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 10px 0 15px;
+            padding: 12px 16px;
+            background: #0f1a24;
+            border-radius: 10px;
+            border: 1px solid #2a3a4a;
+        }
+
+        .file-stats .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .file-stats .stat .count {
+            font-weight: 700;
+            color: #00d4ff;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 16px 0 10px;
+            padding: 15px;
+            background: #0f1a24;
+            border-radius: 10px;
+            border: 1px solid #2a3a4a;
+        }
+
+        .controls label {
+            font-size: 0.85rem;
+            color: #8fa4b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .controls input[type="number"] {
+            width: 70px;
+            background: #0f1a24;
+            color: #e8edf3;
+            border: 1px solid #2a3a4a;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.9rem;
+        }
+
+        .controls input[type="number"]:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        .controls input[type="checkbox"] {
+            accent-color: #00d4ff;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            background: #00d4ff;
+            color: #0f1724;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #00b8e0;
+            transform: scale(1.02);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #2a3a4a;
+            color: #e8edf3;
+        }
+
+        .btn-secondary:hover {
+            background: #3a506a;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b02a37;
+        }
+
+        .progress-wrap {
+            margin: 16px 0 10px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #2a3a4a;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            width: 0%;
+            background: #00d4ff;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: #8fa4b8;
+            margin-top: 6px;
+        }
+
+        .video-list {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .video-list h3 {
+            color: #8fa4b8;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .video-item {
+            background: #0f1a24;
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #2a3a4a;
+            transition: 0.2s;
+        }
+
+        .video-item:hover {
+            border-color: #00d4ff;
+            transform: translateY(-2px);
+        }
+
+        .video-item video {
+            width: 100%;
+            border-radius: 6px;
+            background: #000;
+            max-height: 200px;
+            object-fit: cover;
+        }
+
+        .video-item .info {
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #8fa4b8;
+        }
+
+        .video-item .info strong {
+            color: #e8edf3;
+        }
+
+        .video-item .btn-sm {
+            width: 100%;
+            margin-top: 8px;
+            padding: 6px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            color: #4a6a7a;
+            font-size: 0.75rem;
+            text-align: center;
+            border-top: 1px solid #1a2a3a;
+            padding-top: 15px;
+        }
+
+        .codec-info {
+            background: #0f1a24;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: #6a8a9a;
+            margin: 6px 0 10px;
+            border: 1px solid #1a2a3a;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 18px 14px;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .badge {
+            background: #00d4ff;
+            color: #0f1724;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎬 Generador Múltiple de Shorts</h1>
+        <p class="sub">Sube varias imágenes y audios. La app elegirá combinaciones aleatorias sin repetir archivos.</p>
+
+        <!-- ===== DROP ZONE: IMAGENES ===== -->
+        <div class="drop-zone" id="imageDrop">
+            <div class="icon">🖼️</div>
+            <p>Arrastra <strong>múltiples imágenes</strong> aquí o</p>
+            <label for="imageInput">selecciona archivos</label>
+            <input type="file" id="imageInput" accept="image/*" multiple>
+            <div class="small">PNG, JPG, WEBP, etc. (puedes seleccionar varios)</div>
+        </div>
+
+        <!-- ===== DROP ZONE: AUDIOS ===== -->
+        <div class="drop-zone" id="audioDrop">
+            <div class="icon">🎵</div>
+            <p>Arrastra <strong>múltiples audios</strong> aquí o</p>
+            <label for="audioInput">selecciona archivos</label>
+            <input type="file" id="audioInput" accept="audio/*" multiple>
+            <div class="small">MP3, OGG, WAV, M4A, etc. (puedes seleccionar varios)</div>
+        </div>
+
+        <!-- ===== ESTADÍSTICAS ===== -->
+        <div class="file-stats" id="fileStats" style="display:none;">
+            <div class="stat">🖼️ Imágenes: <span class="count" id="imageCount">0</span></div>
+            <div class="stat">🎵 Audios: <span class="count" id="audioCount">0</span></div>
+            <div class="stat">🎬 Videos posibles: <span class="count" id="possibleVideos">0</span></div>
+        </div>
+
+        <!-- ===== CONTROLES ===== -->
+        <div class="controls">
+            <label>📊 Cantidad de videos: <input type="number" id="videoCount" value="5" min="1" max="50"></label>
+            <label>🔄 Loop <input type="checkbox" id="loopCheck" checked></label>
+            <label>⏱️ Duración (seg): <input type="number" id="durationInput" value="15" min="3" max="120"></label>
+        </div>
+
+        <div class="codec-info" id="codecInfo">🔍 Detectando codecs soportados...</div>
+
+        <!-- ===== BOTONES ===== -->
+        <button class="btn" id="generateBtn" disabled>🎬 Generar Videos</button>
+
+        <div class="progress-wrap" id="progressWrap">
+            <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+            <div class="progress-text" id="progressText">Procesando...</div>
+        </div>
+
+        <div class="video-list" id="videoList">
+            <h3>📹 Videos Generados</h3>
+            <div class="video-grid" id="videoGrid"></div>
+            <div class="action-buttons" style="margin-top:15px;">
+                <button class="btn btn-success" id="downloadAllBtn">⬇️ Descargar Todos</button>
+                <button class="btn btn-secondary" id="clearBtn">🗑️ Limpiar Todo</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            Todo se procesa en tu navegador. Los archivos no se suben a ningún servidor.<br>
+            <span style="color:#4a6a7a;">✅ Sin repeticiones: cada imagen y audio se usa una sola vez</span>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // ELEMENTOS
+        // ============================================================
+        const imageInput = document.getElementById('imageInput');
+        const audioInput = document.getElementById('audioInput');
+        const imageDrop = document.getElementById('imageDrop');
+        const audioDrop = document.getElementById('audioDrop');
+        const imageCount = document.getElementById('imageCount');
+        const audioCount = document.getElementById('audioCount');
+        const possibleVideos = document.getElementById('possibleVideos');
+        const fileStats = document.getElementById('fileStats');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const videoGrid = document.getElementById('videoGrid');
+        const videoList = document.getElementById('videoList');
+        const progressWrap = document.getElementById('progressWrap');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const loopCheck = document.getElementById('loopCheck');
+        const durationInput = document.getElementById('durationInput');
+        const videoCountInput = document.getElementById('videoCount');
+        const codecInfo = document.getElementById('codecInfo');
+
+        let imageFiles = [];
+        let audioFiles = [];
+        let generatedVideos = [];
+        let supportedMimeType = null;
+        let isGenerating = false;
+
+        // ============================================================
+        // DETECCIÓN DE CODECS
+        // ============================================================
+
+        function getSupportedMimeType() {
+            const types = [
+                'video/webm;codecs=vp9,opus',
+                'video/webm;codecs=vp8,opus',
+                'video/webm;codecs=vp9',
+                'video/webm;codecs=vp8',
+                'video/webm;codecs=h264,opus',
+                'video/mp4;codecs=h264,aac',
+                'video/webm'
+            ];
+
+            for (const type of types) {
+                if (MediaRecorder.isTypeSupported(type)) {
+                    return type;
+                }
+            }
+
+            if (MediaRecorder.isTypeSupported('video/webm')) {
+                return 'video/webm';
+            }
+
+            return null;
+        }
+
+        function detectCodecs() {
+            const mimeType = getSupportedMimeType();
+            if (mimeType) {
+                supportedMimeType = mimeType;
+                codecInfo.textContent = `✅ Codec soportado: ${mimeType}`;
+                codecInfo.style.color = '#8fa4b8';
+                return true;
+            } else {
+                codecInfo.textContent = '⚠️ Tu navegador no soporta ningún codec de video compatible.';
+                codecInfo.style.color = '#f8d7da';
+                return false;
+            }
+        }
+
+        // ============================================================
+        // MANEJADORES DE ARCHIVOS
+        // ============================================================
+
+        function handleImages(files) {
+            const validFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            if (validFiles.length === 0) {
+                alert('No se encontraron imágenes válidas.');
+                return;
+            }
+            imageFiles = validFiles;
+            updateStats();
+            checkReady();
+        }
+
+        function handleAudios(files) {
+            const validFiles = Array.from(files).filter(f => f.type.startsWith('audio/'));
+            if (validFiles.length === 0) {
+                alert('No se encontraron audios válidos.');
+                return;
+            }
+            audioFiles = validFiles;
+            updateStats();
+            checkReady();
+        }
+
+        function updateStats() {
+            const imgCount = imageFiles.length;
+            const audCount = audioFiles.length;
+            const maxVideos = Math.min(imgCount, audCount);
+
+            imageCount.textContent = imgCount;
+            audioCount.textContent = audCount;
+            possibleVideos.textContent = maxVideos;
+
+            fileStats.style.display = 'flex';
+
+            // Ajustar el número máximo de videos
+            const currentVal = parseInt(videoCountInput.value) || 5;
+            videoCountInput.max = maxVideos;
+            if (currentVal > maxVideos) {
+                videoCountInput.value = maxVideos;
+            }
+        }
+
+        function checkReady() {
+            const ready = imageFiles.length > 0 && audioFiles.length > 0 && supportedMimeType;
+            generateBtn.disabled = !ready;
+            if (ready) {
+                const maxVideos = Math.min(imageFiles.length, audioFiles.length);
+                generateBtn.textContent = `🎬 Generar ${Math.min(parseInt(videoCountInput.value) || 5, maxVideos)} Videos`;
+            }
+        }
+
+        // ============================================================
+        // DROP ZONES
+        // ============================================================
+
+        [imageDrop, audioDrop].forEach(drop => {
+            drop.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                drop.classList.add('dragover');
+            });
+            drop.addEventListener('dragleave', () => {
+                drop.classList.remove('dragover');
+            });
+            drop.addEventListener('drop', (e) => {
+                e.preventDefault();
+                drop.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    if (drop.id === 'imageDrop') handleImages(files);
+                    else handleAudios(files);
+                }
+            });
+            drop.addEventListener('click', () => {
+                const input = drop.id === 'imageDrop' ? imageInput : audioInput;
+                input.click();
+            });
+        });
+
+        imageInput.addEventListener('change', () => {
+            if (imageInput.files.length > 0) handleImages(imageInput.files);
+        });
+        audioInput.addEventListener('change', () => {
+            if (audioInput.files.length > 0) handleAudios(audioInput.files);
+        });
+
+        // ============================================================
+        // GENERAR VIDEOS
+        // ============================================================
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        async function generateSingleVideo(imageFile, audioFile, index, total) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const imageUrl = URL.createObjectURL(imageFile);
+                    const audioUrl = URL.createObjectURL(audioFile);
+
+                    const audio = new Audio(audioUrl);
+                    const img = new Image();
+                    await new Promise((resolveImg, rejectImg) => {
+                        img.onload = resolveImg;
+                        img.onerror = rejectImg;
+                        img.src = imageUrl;
+                    });
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    const width = 1080;
+                    const height = 1920;
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const imgAspect = img.width / img.height;
+                    const canvasAspect = width / height;
+                    let drawWidth, drawHeight, dx, dy;
+
+                    if (imgAspect > canvasAspect) {
+                        drawWidth = width;
+                        drawHeight = width / imgAspect;
+                        dx = 0;
+                        dy = (height - drawHeight) / 2;
+                    } else {
+                        drawHeight = height;
+                        drawWidth = height * imgAspect;
+                        dx = (width - drawWidth) / 2;
+                        dy = 0;
+                    }
+
+                    ctx.drawImage(img, dx, dy, drawWidth, drawHeight);
+
+                    const duration = parseInt(durationInput.value) || 15;
+                    const loop = loopCheck.checked;
+
+                    const stream = canvas.captureStream(30);
+                    const audioContext = new AudioContext();
+                    const source = audioContext.createMediaElementSource(audio);
+                    const destination = audioContext.createMediaStreamDestination();
+                    source.connect(destination);
+                    await audioContext.resume();
+
+                    const combinedStream = new MediaStream([
+                        ...stream.getTracks(),
+                        ...destination.stream.getTracks()
+                    ]);
+
+                    const recorder = new MediaRecorder(combinedStream, {
+                        mimeType: supportedMimeType
+                    });
+
+                    const chunks = [];
+
+                    recorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) chunks.push(e.data);
+                    };
+
+                    recorder.onstop = () => {
+                        const blob = new Blob(chunks, { type: supportedMimeType.split(';')[0] });
+                        const url = URL.createObjectURL(blob);
+                        const ext = supportedMimeType.includes('mp4') ? 'mp4' : 'webm';
+
+                        resolve({
+                            blob,
+                            url,
+                            filename: `short_${Date.now()}_${index}.${ext}`,
+                            imageName: imageFile.name,
+                            audioName: audioFile.name
+                        });
+
+                        URL.revokeObjectURL(imageUrl);
+                        URL.revokeObjectURL(audioUrl);
+                        audioContext.close();
+                    };
+
+                    recorder.start();
+
+                    audio.loop = loop;
+                    audio.play();
+
+                    let elapsed = 0;
+                    const interval = 100;
+
+                    await new Promise((resolveTimer) => {
+                        const timer = setInterval(() => {
+                            elapsed += interval;
+                            const progress = elapsed / (duration * 1000);
+                            
+                            // Actualizar progreso global
+                            const totalProgress = ((index - 1) / total) + (progress / total);
+                            progressFill.style.width = `${Math.min(totalProgress * 100, 100)}%`;
+                            progressText.textContent = `Video ${index}/${total} - ${Math.round(progress * 100)}%`;
+
+                            if (elapsed >= duration * 1000) {
+                                clearInterval(timer);
+                                audio.pause();
+                                audio.currentTime = 0;
+                                recorder.stop();
+                                resolveTimer();
+                            }
+                        }, interval);
+                    });
+
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        generateBtn.addEventListener('click', async () => {
+            if (isGenerating) return;
+            if (imageFiles.length === 0 || audioFiles.length === 0 || !supportedMimeType) return;
+
+            const maxVideos = Math.min(imageFiles.length, audioFiles.length);
+            let videoCount = parseInt(videoCountInput.value) || 5;
+            videoCount = Math.min(videoCount, maxVideos);
+
+            if (videoCount < 1) {
+                alert('Selecciona al menos 1 video para generar.');
+                return;
+            }
+
+            isGenerating = true;
+            generateBtn.disabled = true;
+            generateBtn.textContent = '⏳ Generando...';
+            progressWrap.style.display = 'block';
+            progressFill.style.width = '0%';
+            progressText.textContent = 'Iniciando...';
+
+            // Limpiar videos anteriores
+            videoGrid.innerHTML = '';
+            generatedVideos = [];
+
+            try {
+                // Barajar aleatoriamente
+                const shuffledImages = shuffleArray(imageFiles);
+                const shuffledAudios = shuffleArray(audioFiles);
+
+                // Tomar solo los primeros 'videoCount'
+                const selectedImages = shuffledImages.slice(0, videoCount);
+                const selectedAudios = shuffledAudios.slice(0, videoCount);
+
+                // Generar cada video secuencialmente
+                for (let i = 0; i < videoCount; i++) {
+                    const result = await generateSingleVideo(
+                        selectedImages[i],
+                        selectedAudios[i],
+                        i + 1,
+                        videoCount
+                    );
+                    generatedVideos.push(result);
+                    addVideoToGrid(result, i + 1);
+                }
+
+                progressFill.style.width = '100%';
+                progressText.textContent = `✅ ¡${videoCount} videos generados correctamente!`;
+                videoList.style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error al generar los videos: ' + error.message);
+                progressText.textContent = '❌ Error en la generación';
+            } finally {
+                isGenerating = false;
+                generateBtn.disabled = false;
+                generateBtn.textContent = `🎬 Generar Videos`;
+            }
+        });
+
+        // ============================================================
+        // MOSTRAR VIDEOS EN GRID
+        // ============================================================
+
+        function addVideoToGrid(videoData, index) {
+            const item = document.createElement('div');
+            item.className = 'video-item';
+
+            const video = document.createElement('video');
+            video.src = videoData.url;
+            video.controls = true;
+            video.preload = 'metadata';
+
+            const info = document.createElement('div');
+            info.className = 'info';
+            info.innerHTML = `
+                <div><strong>Video ${index}</strong></div>
+                <div>🖼️ ${videoData.imageName}</div>
+                <div>🎵 ${videoData.audioName}</div>
+            `;
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'btn btn-success btn-sm';
+            downloadBtn.textContent = '⬇️ Descargar';
+            downloadBtn.addEventListener('click', () => {
+                const link = document.createElement('a');
+                link.href = videoData.url;
+                link.download = videoData.filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+            item.appendChild(video);
+            item.appendChild(info);
+            item.appendChild(downloadBtn);
+            videoGrid.appendChild(item);
+        }
+
+        // ============================================================
+        // DESCARGAR TODOS
+        // ============================================================
+
+        downloadAllBtn.addEventListener('click', async () => {
+            if (generatedVideos.length === 0) return;
+
+            // Si es solo un video, descargarlo directamente
+            if (generatedVideos.length === 1) {
+                const link = document.createElement('a');
+                link.href = generatedVideos[0].url;
+                link.download = generatedVideos[0].filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                return;
+            }
+
+            // Para múltiples videos, descargar uno por uno con un pequeño delay
+            for (let i = 0; i < generatedVideos.length; i++) {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = generatedVideos[i].url;
+                    link.download = generatedVideos[i].filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }, i * 500);
+            }
+        });
+
+        // ============================================================
+        // LIMPIAR TODO
+        // ============================================================
+
+        clearBtn.addEventListener('click', () => {
+            // Limpiar URLs
+            generatedVideos.forEach(v => URL.revokeObjectURL(v.url));
+            generatedVideos = [];
+            videoGrid.innerHTML = '';
+            videoList.style.display = 'none';
+            progressWrap.style.display = 'none';
+            progressFill.style.width = '0%';
+
+            imageFiles = [];
+            audioFiles = [];
+            imageInput.value = '';
+            audioInput.value = '';
+            fileStats.style.display = 'none';
+            generateBtn.disabled = true;
+            generateBtn.textContent = '🎬 Generar Videos';
+            detectCodecs();
+        });
+
+        // ============================================================
+        // ACTUALIZAR TEXTO DEL BOTÓN AL CAMBIAR CANTIDAD
+        // ============================================================
+
+        videoCountInput.addEventListener('change', () => {
+            checkReady();
+        });
+
+        // ============================================================
+        // INICIO
+        // ============================================================
+
+        detectCodecs();
+        console.log('🎬 Generador Múltiple de Shorts listo.');
+        console.log('Codec soportado:', supportedMimeType);
+    </script>
+</body>
+</html>
